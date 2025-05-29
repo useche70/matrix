@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Rain Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            background: #000;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            color: #00ff00;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+        }
+
+        .controls button {
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .controls input[type="range"] {
+            width: 100px;
+            margin: 5px;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #00ff00;
+            font-size: 12px;
+            text-align: right;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+        }
+
+        .github-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            color: #00ff00;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .github-link:hover {
+            background: #00ff00;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    
+    <div class="controls">
+        <h3>🌐 Matrix Digital Rain</h3>
+        <button onclick="togglePause()">⏸️ Pausar/Reanudar</button>
+        <button onclick="changeSpeed()">⚡ Cambiar Velocidad</button>
+        <button onclick="changeColor()">🎨 Cambiar Color</button>
+        <br>
+        <label>Densidad: </label>
+        <input type="range" id="density" min="10" max="50" value="20" onchange="updateDensity(this.value)">
+        <br>
+        <label>Velocidad: </label>
+        <input type="range" id="speed" min="1" max="10" value="3" onchange="updateSpeed(this.value)">
+    </div>
+
+    <a href="https://github.com/useche70/matrix" class="github-link" target="_blank">
+        ⭐ Ver en GitHub
+    </a>
+
+    <div class="info">
+        <strong>Matrix Digital Rain Effect</strong><br>
+        Presiona F11 para pantalla completa<br>
+        Haz clic en la pantalla para efectos especiales<br>
+        <em>Publicado en GitHub Pages</em>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        // Configuración inicial
+        let isPaused = false;
+        let animationSpeed = 3;
+        let matrixColor = '#00ff00';
+        let columns = 0;
+        let drops = [];
+        let fontSize = 14;
+
+        // Caracteres japoneses y símbolos para el efecto Matrix
+        const matrixChars = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            columns = Math.floor(canvas.width / fontSize);
+            
+            // Reinicializar las gotas
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
+            }
+        }
+
+        function drawMatrix() {
+            if (isPaused) return;
+
+            // Efecto de desvanecimiento
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = matrixColor;
+            ctx.font = `${fontSize}px Courier New`;
+
+            // Dibujar los caracteres
+            for (let i = 0; i < drops.length; i++) {
+                const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                // Efecto de brillo para el carácter principal
+                if (Math.random() > 0.98) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(char, x, y);
+                    ctx.fillStyle = matrixColor;
+                } else {
+                    ctx.fillText(char, x, y);
+                }
+
+                // Resetear la gota cuando llegue al final
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                drops[i] += animationSpeed / 10;
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+
+        function changeSpeed() {
+            animationSpeed = animationSpeed >= 10 ? 1 : animationSpeed + 2;
+            document.getElementById('speed').value = animationSpeed;
+        }
+
+        function changeColor() {
+            const colors = ['#00ff00', '#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
+            const currentIndex = colors.indexOf(matrixColor);
+            matrixColor = colors[(currentIndex + 1) % colors.length];
+        }
+
+        function updateDensity(value) {
+            fontSize = 51 - parseInt(value);
+            resizeCanvas();
+        }
+
+        function updateSpeed(value) {
+            animationSpeed = parseInt(value);
+        }
+
+        // Efectos especiales al hacer clic
+        canvas.addEventListener('click', function(e) {
+            const x = Math.floor(e.clientX / fontSize);
+            const y = Math.floor(e.clientY / fontSize);
+            
+            // Crear una "explosión" de caracteres
+            for (let i = -3; i < 4; i++) {
+                for (let j = -3; j < 4; j++) {
+                    const newX = x + i;
+                    const newY = y + j;
+                    if (newX >= 0 && newX < columns && newY >= 0) {
+                        drops[newX] = newY;
+                    }
+                }
+            }
+
+            // Efecto de flash
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Control de teclado
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    togglePause();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    animationSpeed = Math.min(10, animationSpeed + 1);
+                    document.getElementById('speed').value = animationSpeed;
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    animationSpeed = Math.max(1, animationSpeed - 1);
+                    document.getElementById('speed').value = animationSpeed;
+                    break;
+                case 'c':
+                    changeColor();
+                    break;
+            }
+        });
+
+        // Inicialización
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Bucle de animación
+        function animate() {
+            drawMatrix();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Mensaje de bienvenida
+        setTimeout(() => {
+            console.log('%c🌐 Matrix Digital Rain - GitHub Pages', 'color: #00ff00; font-size: 16px; font-weight: bold;');
+            console.log('%cControles:', 'color: #00ff00; font-size: 14px;');
+            console.log('%c- Espacio: Pausar/Reanudar', 'color: #00ff00;');
+            console.log('%c- Flechas arriba/abajo: Cambiar velocidad', 'color: #00ff00;');
+            console.log('%c- C: Cambiar color', 'color: #00ff00;');
+            console.log('%c- Clic: Efectos especiales', 'color: #00ff00;');
+            console.log('%c⭐ Repositorio: https://github.com/useche70/matrix', 'color: #00ff00;');
+        }, 1000);
+    </script>
+</body>
+</html>
